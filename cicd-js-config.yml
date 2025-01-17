@@ -1,0 +1,72 @@
+---
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: circleci/node:14
+    steps:
+      - checkout
+      - run:
+          name: install dependencies
+          command: npm i
+     # - run:
+      #    name: Run Test
+       #   command: npm test
+      - run:
+          name: Build Production
+          command: npm run build
+      - run:
+          name: Create a ZIP file
+          command: zip -r build.zip build appspec.yaml scripts
+      - persist_to_workspace:
+          root: .
+          paths:
+            - build.zip
+  s3-push:
+    docker:
+      - image: cimg/python:3.8.16
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install AWS CLI
+          command: pip install  awscli
+      - run:
+          name: null
+          command: |
+            aws s3 cp build.zip s3://cicd-bucket-rajeev/build-$CIRCLE_SHA1/build.zip
+  deploy-aws:
+    docker:
+      - image: cimg/python:3.8.16
+    steps:
+      - checkout
+      - run:
+          name: Install AWSCLI
+          command: pip install awscli
+      - run:
+          name: Trigger Codedeploy app 
+          command: |
+            aws deploy create-deployment \
+              --region us-east-1 \
+              --application-name aws-rajeev-circleci-codedeploy \
+              --deployment-group-name code-deploy-service-rajeev \
+              --s3-location bucket=cicd-bucket-rajeev,key=build-$CIRCLE_SHA1/build.zip,bundleType=zip \
+              --description "CircleCI Deployment for $CIRCLE_SHA1"
+          
+workflows:
+  buildandpushs3:
+    jobs:
+      - build
+      - s3-push:
+          requires:
+            - build
+          context: AWS-CIRCLECI
+      - require-approval:
+          type: approval
+          requires:
+            - s3-push
+      - deploy-aws:
+          requires:
+            - require-approval
+          context: AWS-CIRCLECI
