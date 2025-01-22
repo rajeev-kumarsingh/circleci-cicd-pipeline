@@ -116,7 +116,7 @@ systemctl status codedeploy-agent
   ![alt text](image-1.png)
   ![alt text](image-2.png)
 
-then you can go to CodeDeploy on AWS console Management to see further Deployment processes defined in appspec.yml and scripts.sh in the script directory.
+then you can go to CodeDeploy on AWS console Management to see further Deployment processes defined in **appspec.yml** and **/scripts/scripts.sh**.
 ![alt text](image-3.png)
 ![alt text](image-4.png)
 ![alt text](image-5.png)
@@ -469,3 +469,124 @@ cd codedeploy-agent/ && ls -la
 ```
 tail -f codedeploy-agent.log
 ```
+
+# 4
+
+- Deployment Code: <font style="color: red">**d-LI85W4FQA**</font>
+- Error Code: <font style="color: red">**ScriptFailed**</font>
+- Most Recent Event: <font style="color :red">**stop_server.sh**</font>
+- Script name: <font style="color :red">**scripts/stop_server.sh**</font>
+- Message: Script at specified location: **scripts/start_server.sh** run as user root failed with exit code 127
+  ![alt text](image-26.png)
+  The error in the scripts/stop_server.sh script indicates that the PID variable is causing an issue, specifically with the error: PID: command not found. This happens because the shell interprets PID as a command instead of a variable.
+
+## Problem:
+
+- The PID variable is incorrectly interpreted, likely due to a syntax issue.
+- This could be caused by incorrect quotes or an invalid command substitution.
+
+## Fix:
+
+Here’s the corrected stop_server.sh script:
+
+```
+#!/bin/bash
+
+# Exit script if any command fails
+set -e
+
+echo "Application stop is underway...."
+
+# Application directory
+APP_DIR="/home/ubuntu/react-app"
+
+# Port on which the app is running
+PORT=5000
+
+# Find the process ID
+PID=$(lsof -t -i:$PORT || true)
+
+if [ -n "$PID" ]; then
+  echo "Killing Process with PID $PID"
+  kill -9 "$PID"
+fi
+
+echo "Application Stopped"
+
+```
+
+## Explanation of Changes:
+
+1. Fixed the PID variable assignment:
+
+- Ensured that the output of lsof -t -i:$PORT is assigned to PID.
+- Used || true to handle cases where no process is found (prevents script failure).
+
+2. Added double quotes around $PID:
+
+- Prevents errors if PID is empty.
+
+3. Improved Debugging:
+
+- Added a message to show the PID being terminated.
+
+## Additional Steps:
+
+1. Ensure lsof is Installed:
+
+- On the target EC2 instance, confirm that lsof is installed:
+
+```
+sudo apt install lsof -y
+```
+
+2. Check Script Permissions:
+
+- Make sure the script has execution permissions:
+
+```
+cd /opt/codedeploy-agent/deployment-root/114c6d91-3958-4264-8edb-63e659a975ed/d-2TOL0ZEQA/deployment-archive/scripts
+```
+
+```
+sudo chmod +x stop_server.sh
+```
+
+```
+ls -ltr
+```
+
+![alt text](image-27.png)
+
+```
+cat stop_server.sh
+```
+
+```
+#!/bin/bash
+
+#set errors if any command is not execute successfully
+set -e
+echo "Appliction stop is underway...."
+#application dir
+APP_DIR="/home/ubuntu/react-app"
+# Port on which our app is running
+PORT=5000
+# find process id
+PID=$(lsof -t -i:$PORT || true)
+#
+if [ -n "$PID" ]; then
+echo "Killing Process"
+kill -9 $PID
+fi
+
+echo "Application Stopped"
+```
+
+## execute it to verify
+
+```
+bash stop_server.sh
+```
+
+![alt text](image-28.png)
