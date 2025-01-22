@@ -14,6 +14,7 @@
 ## Cause:
 
 1. Check <font style="color: yellow">CodeDeploy Agent</font> is installed or not on EC2 machine, If not then follow below steps to install the CodeDeploy agent on Ubuntu Server
+   [Install CodeDeploy Agent](https://docs.aws.amazon.com/codedeploy/latest/userguide/codedeploy-agent-operations-install-ubuntu.html)
 
    - To check <font style="color: yellow">CodeDeploy Agent</font> Agent is install or not enter the following command
 
