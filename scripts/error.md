@@ -196,7 +196,7 @@ APP_DIR="/home/ubuntu/react-app"
 rm -rf $APP_DIR
 ```
 
-# 2.
+# 3.
 
 - Deployment Code: <font style="color: red">d-MN63HEDQA</font>
 - Error Code: <font style="color: red">UnknownError</font>
@@ -393,7 +393,7 @@ workflows:
 
 - Check appspec file extension, it should be <font style="color: yellow"> appspec.yml</font>
 
-# 3.
+# 4.
 
 - Deployment Code: <font style="color: red">d-VJ5C1KEQA</font>
 - Error Code: <font style="color: red">ScriptFailed</font>
@@ -471,7 +471,7 @@ cd codedeploy-agent/ && ls -la
 tail -f codedeploy-agent.log
 ```
 
-# 4
+# 5
 
 - Deployment Code: <font style="color: red">**d-LI85W4FQA**</font>
 - Error Code: <font style="color: red">**ScriptFailed**</font>
